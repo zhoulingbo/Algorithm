@@ -85,17 +85,8 @@ public class StringSimilarity
             v2[index] = map2.containsKey(ch) ? map2.get(ch) : 0;
             index ++;
         }
-        
-        double similarity = 0, sum = 0, sum1 = 0, sum2 = 0;
-        for (int i=0; i<set.size(); i++)
-        {
-            sum += v1[i]*v2[i];
-            sum1 += v1[i]*v1[i];
-            sum2 += v2[i]*v2[i];
-        }
-        
-        similarity = sum / (Math.sqrt(sum1) * Math.sqrt(sum2));
-        return similarity;
+
+        return CosineSimiliarity.compute(v1, v2);
     }
     
     /**
