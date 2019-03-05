@@ -101,9 +101,9 @@ public class ID3
      * @param index
      * @return
      */
-    private double conditionEntropy(String[][] data, int ind)
+    protected double conditionEntropy(String[][] data, int index)
     {
-        Map<String, Map<String, Integer>> map = getAttributes(data, ind);
+        Map<String, Map<String, Integer>> map = getAttributes(data, index);
 
         double amount = 0.0;
         for (String key : map.keySet())
@@ -123,16 +123,16 @@ public class ID3
     /**
      * 获取属性分类
      * @param data
-     * @param ind
+     * @param index
      * @return
      */
-    private Map<String, Map<String, Integer>> getAttributes(String[][] data, int ind)
+    private Map<String, Map<String, Integer>> getAttributes(String[][] data, int index)
     {
         Map<String, Map<String, Integer>> map = new HashMap<>();
         for (int j = 0; j < data.length; j++)
         {
             String[] item = data[j];
-            String key = item[ind];
+            String key = item[index];
             String type = item[item.length - 1];
             if (!map.containsKey(key))
             {
@@ -162,7 +162,7 @@ public class ID3
      * @param map
      * @return
      */
-    private double calcEntropy(Map<String, Integer> map)
+    protected double calcEntropy(Map<String, Integer> map)
     {
         int total = 0;
         for (String key : map.keySet())
@@ -184,14 +184,14 @@ public class ID3
     }
 
     /**
-     * 信息增益
-     * @param e // 信息熵
-     * @param c // 条件熵
+     * 信息增益 = 信息熵 - 条件熵
+     * @param data
+     * @param index
      * @return
      */
-    private double gain(String[][] data, int ind)
+    protected double gain(String[][] data, int index)
     {
-        return dataEnt - conditionEntropy(data, ind);
+        return dataEnt - conditionEntropy(data, index);
     }
 
     /**
@@ -224,7 +224,7 @@ public class ID3
      * @param data
      * @return
      */
-    private Node buildDecisionTree(String[][] data)
+    protected Node buildDecisionTree(String[][] data)
     {
         int index = maxGainIndex(data);
         Node node = new Node(labels[index]);
