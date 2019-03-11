@@ -64,6 +64,14 @@ public class UnitaryLinearRegression
         return a;
     }
 
+    /**
+     * 均方误差
+     * @param x_s
+     * @param y_s
+     * @param a1
+     * @param a2
+     * @return
+     */
     public double meanSquareError(double[] x_s, double[] y_s, double a1, double a2)
     {
         double a = 0.0;
@@ -76,6 +84,11 @@ public class UnitaryLinearRegression
 
         a = a / (2 * x_s.length);
         return a;
+    }
+
+    public double predict(double x)
+    {
+        return w0 + w1 * x;
     }
 
     public double getW0()
