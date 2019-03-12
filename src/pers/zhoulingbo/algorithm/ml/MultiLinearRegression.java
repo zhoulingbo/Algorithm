@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import Jama.Matrix;
+
 /**
  * 
  * 多元线性回归(波士顿房价)
@@ -22,16 +24,23 @@ public class MultiLinearRegression
     private double learn_rate = 0.0003; // 学习率
     private double[] w;
     private int step = 200000; // 步数
+    private boolean isLeastSquare = false;
 
     public static void main(String[] args)
     {
-        MultiLinearRegression lr = new MultiLinearRegression("housing.data");
-        lr.gradientDescent();
+        MultiLinearRegression lr = new MultiLinearRegression("housing.data", true);
+        lr.train();
         lr.predict();
     }
 
     public MultiLinearRegression(String path)
     {
+        init(path);
+    }
+    
+    public MultiLinearRegression(String path, boolean isLeastSquare)
+    {
+        this.isLeastSquare = isLeastSquare;
         init(path);
     }
     
@@ -62,7 +71,8 @@ public class MultiLinearRegression
                 line = bufferReader.readLine();
             }
 
-            xList = normalization(xList);
+            if (!isLeastSquare)
+                xList = normalization(xList);
 
             int size = xList.size() * 4 / 5;    // 划分训练与测试数据
             data_xs = new double[size][xList.get(0).length];
@@ -70,7 +80,6 @@ public class MultiLinearRegression
             test_xs = new double[xList.size()-size][xList.get(0).length];
             test_ys = new double[xList.size()-size];
             
-            xList.toArray(data_xs);
             for (int j=0; j<xList.size(); j++)
             {
                 if (j < size)
@@ -85,12 +94,19 @@ public class MultiLinearRegression
                 }
             }
             w = new double[xList.get(0).length];
-            
         }
         catch (Exception e)
         {
             e.printStackTrace();
         }
+    }
+    
+    public void train()
+    {
+        if (isLeastSquare)
+            leastSquare();
+        else
+            gradientDescent();
     }
 
     /**
@@ -141,7 +157,7 @@ public class MultiLinearRegression
     /**
      * 梯度下降算法
      */
-    public void gradientDescent()
+    protected void gradientDescent()
     {
         double[] t = Arrays.copyOf(w, w.length);
         for (int i = 0; i < step; i++)
@@ -164,10 +180,29 @@ public class MultiLinearRegression
     }
 
     /**
+     * 最小二乘法：w = inverse(AT*A)*AT*y
+     * AT表示A的转置
+     * inverse表示矩阵的逆
+     */
+    protected void leastSquare()
+    {
+        Matrix A = new Matrix(data_xs);
+        Matrix B = new Matrix(data_ys, data_ys.length);
+        Matrix AT = A.transpose();
+        Matrix W = AT.times(A).inverse().times(AT).times(B);
+        double[][] d = W.getArray();
+        for (int i=0; i<d.length; i++)
+        {
+            w[i] = d[i][0];
+            System.out.print(w[i] + ",");
+        }
+    }
+
+    /**
      * 求偏导
      * @return
      */
-    public double partialDerivative(double[][] x_s, double[] y_s, int index, double[] as)
+    private double partialDerivative(double[][] x_s, double[] y_s, int index, double[] as)
     {
         double a = 0.0;
         for (int i = 0; i < x_s.length; i++)
@@ -193,7 +228,7 @@ public class MultiLinearRegression
      * @param a2
      * @return
      */
-    public double meanSquareError(double[][] x_s, double[] y_s, double[] as)
+    private double meanSquareError(double[][] x_s, double[] y_s, double[] as)
     {
         double a = 0.0;
         for (int i = 0; i < x_s.length; i++)
@@ -218,7 +253,6 @@ public class MultiLinearRegression
      */
     public void predict()
     {
-        //double[] w = new double[]{0.3466787643361681,  -0.20165341883719037,  0.06517784388663479,  0.04290911878504748,  0.43782563669154545,  0.17312686768172994,  3.9793477772298633,  0.031770279099284135,  -0.8108285635233324,  0.2766789554027901,  -0.010640982819620335,  -0.27015387714307687,  0.03416740797305704,  -0.6575973385655476};
         for (int k=0; k<test_xs.length; k++)
         {
             double a = 0.0;
