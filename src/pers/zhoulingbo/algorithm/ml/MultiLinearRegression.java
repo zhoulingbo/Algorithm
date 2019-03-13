@@ -23,12 +23,13 @@ public class MultiLinearRegression
     
     private double learn_rate = 0.0003; // 学习率
     private double[] w;
-    private int step = 200000; // 步数
+    private int step = 100000; // 步数
     private boolean isLeastSquare = false;
+    private double lambda = 0.001;      //正则化系数，可选：0 0.001 0.003 0.01 0.03 0.1 0.3 1 3 10
 
     public static void main(String[] args)
     {
-        MultiLinearRegression lr = new MultiLinearRegression("housing.data", true);
+        MultiLinearRegression lr = new MultiLinearRegression("housing.data", false);
         lr.train();
         lr.predict();
     }
@@ -164,7 +165,7 @@ public class MultiLinearRegression
         {
             for (int j=0; j<w.length; j++)
             {
-                w[j] = t[j] - learn_rate * partialDerivative(data_xs, data_ys, j, t);
+                w[j] = t[j]*(1-learn_rate*lambda) - learn_rate * partialDerivative(data_xs, data_ys, j, t);
             }
 
             t = Arrays.copyOf(w, w.length);

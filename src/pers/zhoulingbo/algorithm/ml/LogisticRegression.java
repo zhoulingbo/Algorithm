@@ -9,14 +9,15 @@ import java.util.List;
 public class LogisticRegression
 {
 
-    private double[][] data_xs; // 训练数据集
-    private double[] data_ys; // 训练结果集
-    private double[][] test_xs; // 测试数据集
-    private double[] test_ys; // 测试结果集
+    private double[][] data_xs;     // 训练数据集
+    private double[] data_ys;       // 训练结果集
+    private double[][] test_xs;     // 测试数据集
+    private double[] test_ys;       // 测试结果集
 
-    private double learn_rate = 0.03; // 学习率
     private double[] w;
-    private int step = 1000000; // 步数
+    private double threshold = 0.5;     // 阈值，情况不同可设定不同的值
+    private double learn_rate = 0.3;    // 学习率
+    private int step = 40000;           // 步数
 
     public static void main(String[] args)
     {
@@ -171,7 +172,7 @@ public class LogisticRegression
         for (int i = 0; i < x_s.length; i++)
         {
             double b = sumOfProduct(x_s[i], as);
-            double h = 1.0 / (1.0 + Math.exp(-b));
+            double h = sigmod(b);
             h = (h - y_s[i])*x_s[i][index];
             a += h;
         }
@@ -179,7 +180,7 @@ public class LogisticRegression
     }
 
     /**
-     * 向量相乘
+     * 向量相乘Y=WX
      * @param x
      * @param w
      * @return
@@ -194,6 +195,12 @@ public class LogisticRegression
         return sum;
     }
 
+    private double sigmod(double z)
+    {
+        double h = 1.0 / (1.0 + Math.exp(-z));
+        return h;
+    }
+
     /**
      * 损失函数
      * @param x_s
@@ -206,12 +213,8 @@ public class LogisticRegression
         double a = 0.0;
         for (int i = 0; i < x_s.length; i++)
         {
-            double b = 0.0;
-            for (int j = 0; j < x_s[0].length; j++)
-            {
-                b += as[j] * x_s[i][j];
-            }
-            double h = 1.0 / (1.0 + Math.exp(-b));
+            double b = sumOfProduct(x_s[i], as);
+            double h = sigmod(b);
             a += y_s[i] * Math.log(h) + (1 - y_s[i]) * Math.log(1 - h);
         }
 
@@ -227,12 +230,10 @@ public class LogisticRegression
     {
         for (int k = 0; k < test_xs.length; k++)
         {
-            double a = 0.0;
-            for (int i = 0; i < w.length; i++)
-                a += w[i] * test_xs[k][i];
-            a = 1.0 / (1.0 + Math.exp(-a));
+            double sum = sumOfProduct(test_xs[k], w);
+            double h = sigmod(sum);
             double p = 0;
-            if (a >= 0.5)
+            if (h >= threshold)
                 p = 1;
             System.out.println("predict:" + p + " test_y:" + test_ys[k]);
         }
