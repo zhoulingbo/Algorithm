@@ -28,7 +28,7 @@ public class MultiLinearRegression
 
     public static void main(String[] args)
     {
-        MultiLinearRegression lr = new MultiLinearRegression("housing.data", false);
+        MultiLinearRegression lr = new MultiLinearRegression("housing.data", true);
         lr.train();
         lr.predict();
     }
@@ -196,6 +196,7 @@ public class MultiLinearRegression
             w[i] = d[i][0];
             System.out.print(w[i] + ",");
         }
+        System.out.println();
     }
 
     /**
@@ -224,8 +225,7 @@ public class MultiLinearRegression
      * 均方误差
      * @param x_s
      * @param y_s
-     * @param a1
-     * @param a2
+     * @param as
      * @return
      */
     private double meanSquareError(double[][] x_s, double[] y_s, double[] as)

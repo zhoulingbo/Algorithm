@@ -14,7 +14,7 @@ public class LogisticRegression
     private double[][] test_xs; // 测试数据集
     private double[] test_ys; // 测试结果集
 
-    private double learn_rate = 0.0003; // 学习率
+    private double learn_rate = 0.03; // 学习率
     private double[] w;
     private int step = 1000000; // 步数
 
@@ -170,25 +170,35 @@ public class LogisticRegression
         double a = 0.0;
         for (int i = 0; i < x_s.length; i++)
         {
-            double b = 0.0;
-            for (int j = 0; j < x_s[0].length; j++)
-            {
-                b += as[j] * x_s[i][j];
-            }
-
+            double b = sumOfProduct(x_s[i], as);
             double h = 1.0 / (1.0 + Math.exp(-b));
             h = (h - y_s[i])*x_s[i][index];
             a += h;
         }
-        return a/x_s.length;
+        return a;
+    }
+
+    /**
+     * 向量相乘
+     * @param x
+     * @param w
+     * @return
+     */
+    private double sumOfProduct(double[] x, double[] w)
+    {
+        double sum = 0.0;
+        for (int i = 0; i < x.length; i++)
+        {
+            sum += x[i] * w[i];
+        }
+        return sum;
     }
 
     /**
      * 损失函数
      * @param x_s
      * @param y_s
-     * @param a1
-     * @param a2
+     * @param as
      * @return
      */
     private double loss(double[][] x_s, double[] y_s, double[] as)
