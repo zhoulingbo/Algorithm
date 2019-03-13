@@ -6,51 +6,37 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import Jama.Matrix;
-
-/**
- * 
- * 多元线性回归(波士顿房价)
- * 模型: y = w0 + w1*x1 + w2*x2 + ... + wn*xn;
- *
- */
-public class MultiLinearRegression
+public class LogisticRegression
 {
-    private double[][] data_xs;     // 训练数据集
-    private double[] data_ys;       // 训练结果集
-    private double[][] test_xs;     // 测试数据集
-    private double[] test_ys;       // 测试结果集
-    
+
+    private double[][] data_xs; // 训练数据集
+    private double[] data_ys; // 训练结果集
+    private double[][] test_xs; // 测试数据集
+    private double[] test_ys; // 测试结果集
+
     private double learn_rate = 0.0003; // 学习率
     private double[] w;
-    private int step = 200000; // 步数
-    private boolean isLeastSquare = false;
+    private int step = 1000000; // 步数
 
     public static void main(String[] args)
     {
-        MultiLinearRegression lr = new MultiLinearRegression("housing.data", false);
+        LogisticRegression lr = new LogisticRegression("sample.data");
         lr.train();
         lr.predict();
     }
 
-    public MultiLinearRegression(String path)
+    public LogisticRegression(String path)
     {
         init(path);
     }
-    
-    public MultiLinearRegression(String path, boolean isLeastSquare)
-    {
-        this.isLeastSquare = isLeastSquare;
-        init(path);
-    }
-    
+
     private void init(String path)
     {
         try (FileReader input = new FileReader(path))
         {
             List<double[]> xList = new ArrayList<>();
             List<Double> yList = new ArrayList<>();
-            
+
             BufferedReader bufferReader = new BufferedReader(input);
             String line = bufferReader.readLine();
             while (line != null)
@@ -61,26 +47,25 @@ public class MultiLinearRegression
                     String[] item = line.split("\\s+");
                     double[] ditem = new double[item.length];
                     ditem[0] = 1.0;
-                    for (int i=1; i<item.length; i++)
+                    for (int i = 1; i < item.length; i++)
                     {
-                        ditem[i] = Double.parseDouble(item[i-1]);
+                        ditem[i] = Double.parseDouble(item[i - 1]);
                     }
                     xList.add(ditem);
-                    yList.add(Double.parseDouble(item[item.length-1]));
+                    yList.add(Double.parseDouble(item[item.length - 1]));
                 }
                 line = bufferReader.readLine();
             }
 
-            if (!isLeastSquare)
-                xList = normalization(xList);
+            xList = normalization(xList);
 
-            int size = xList.size() * 4 / 5;    // 划分训练与测试数据
+            int size = xList.size() * 4 / 5; // 划分训练与测试数据
             data_xs = new double[size][xList.get(0).length];
             data_ys = new double[size];
-            test_xs = new double[xList.size()-size][xList.get(0).length];
-            test_ys = new double[xList.size()-size];
-            
-            for (int j=0; j<xList.size(); j++)
+            test_xs = new double[xList.size() - size][xList.get(0).length];
+            test_ys = new double[xList.size() - size];
+
+            for (int j = 0; j < xList.size(); j++)
             {
                 if (j < size)
                 {
@@ -89,8 +74,8 @@ public class MultiLinearRegression
                 }
                 else
                 {
-                    test_xs[j-size] = xList.get(j);
-                    test_ys[j-size] = yList.get(j);
+                    test_xs[j - size] = xList.get(j);
+                    test_ys[j - size] = yList.get(j);
                 }
             }
             w = new double[xList.get(0).length];
@@ -100,13 +85,10 @@ public class MultiLinearRegression
             e.printStackTrace();
         }
     }
-    
+
     public void train()
     {
-        if (isLeastSquare)
-            leastSquare();
-        else
-            gradientDescent();
+        gradientDescent();
     }
 
     /**
@@ -117,12 +99,12 @@ public class MultiLinearRegression
     {
         double mins[] = new double[list.get(0).length];
         double maxs[] = new double[list.get(0).length];
-        
-        for (int i=0; i<list.get(0).length; i++)
+
+        for (int i = 0; i < list.get(0).length; i++)
         {
             double min = list.get(0)[i];
             double max = list.get(0)[i];
-            for (int j=0; j<list.size(); j++)
+            for (int j = 0; j < list.size(); j++)
             {
                 double[] item = list.get(j);
                 if (item[i] > max)
@@ -138,11 +120,11 @@ public class MultiLinearRegression
             maxs[i] = max;
         }
 
-        for (int i=0; i<mins.length; i++)
+        for (int i = 0; i < mins.length; i++)
         {
             if (mins[i] < -3 || maxs[i] > 3)
             {
-                for (int j=0; j<list.size(); j++)
+                for (int j = 0; j < list.size(); j++)
                 {
                     double[] item = list.get(j);
                     double val = item[i] / (1 + maxs[i] - mins[i]);
@@ -150,7 +132,7 @@ public class MultiLinearRegression
                 }
             }
         }
-        
+
         return list;
     }
 
@@ -162,39 +144,20 @@ public class MultiLinearRegression
         double[] t = Arrays.copyOf(w, w.length);
         for (int i = 0; i < step; i++)
         {
-            for (int j=0; j<w.length; j++)
+            for (int j = 0; j < w.length; j++)
             {
                 w[j] = t[j] - learn_rate * partialDerivative(data_xs, data_ys, j, t);
             }
 
             t = Arrays.copyOf(w, w.length);
 
-            if (i %10 == 0)
+            if (i % 10 == 0)
             {
-                System.out.println("step:" + i + "  loss:" + meanSquareError(data_xs, data_ys, t));
-                for (int k=0; k<w.length; k++)
+                System.out.println("step:" + i + "  loss:" + loss(data_xs, data_ys, t));
+                for (int k = 0; k < w.length; k++)
                     System.out.print(w[k] + ",");
                 System.out.println();
             }
-        }
-    }
-
-    /**
-     * 最小二乘法：w = inverse(AT*A)*AT*y
-     * AT表示A的转置
-     * inverse表示矩阵的逆
-     */
-    protected void leastSquare()
-    {
-        Matrix A = new Matrix(data_xs);
-        Matrix B = new Matrix(data_ys, data_ys.length);
-        Matrix AT = A.transpose();
-        Matrix W = AT.times(A).inverse().times(AT).times(B);
-        double[][] d = W.getArray();
-        for (int i=0; i<d.length; i++)
-        {
-            w[i] = d[i][0];
-            System.out.print(w[i] + ",");
         }
     }
 
@@ -210,25 +173,25 @@ public class MultiLinearRegression
             double b = 0.0;
             for (int j = 0; j < x_s[0].length; j++)
             {
-                b += as[j]*x_s[i][j];
+                b += as[j] * x_s[i][j];
             }
-            
-            b -= y_s[i];
-            b *= x_s[i][index];
-            a += b;
+
+            double h = 1.0 / (1.0 + Math.exp(-b));
+            h = (h - y_s[i])*x_s[i][index];
+            a += h;
         }
-        return a;
+        return a/x_s.length;
     }
 
     /**
-     * 均方误差
+     * 损失函数
      * @param x_s
      * @param y_s
      * @param a1
      * @param a2
      * @return
      */
-    private double meanSquareError(double[][] x_s, double[] y_s, double[] as)
+    private double loss(double[][] x_s, double[] y_s, double[] as)
     {
         double a = 0.0;
         for (int i = 0; i < x_s.length; i++)
@@ -236,14 +199,13 @@ public class MultiLinearRegression
             double b = 0.0;
             for (int j = 0; j < x_s[0].length; j++)
             {
-                b += as[j]*x_s[i][j];
+                b += as[j] * x_s[i][j];
             }
-            b -= y_s[i];
-            b *= b;
-            a += b;
+            double h = 1.0 / (1.0 + Math.exp(-b));
+            a += y_s[i] * Math.log(h) + (1 - y_s[i]) * Math.log(1 - h);
         }
 
-        a = a / (2 * x_s.length);
+        a = - a / x_s.length;
         return a;
     }
 
@@ -253,12 +215,16 @@ public class MultiLinearRegression
      */
     public void predict()
     {
-        for (int k=0; k<test_xs.length; k++)
+        for (int k = 0; k < test_xs.length; k++)
         {
             double a = 0.0;
-            for (int i=0; i<w.length; i++)
-                a += w[i]*test_xs[k][i];
-            System.out.println("predict:" + a + " test_y:" + test_ys[k]);
+            for (int i = 0; i < w.length; i++)
+                a += w[i] * test_xs[k][i];
+            a = 1.0 / (1.0 + Math.exp(-a));
+            double p = 0;
+            if (a >= 0.5)
+                p = 1;
+            System.out.println("predict:" + p + " test_y:" + test_ys[k]);
         }
     }
 
