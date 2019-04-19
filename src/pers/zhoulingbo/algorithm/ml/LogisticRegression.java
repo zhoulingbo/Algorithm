@@ -16,12 +16,12 @@ public class LogisticRegression
 
     private double[] w;
     private double threshold = 0.5;     // 阈值，情况不同可设定不同的值
-    private double learn_rate = 0.3;    // 学习率
-    private int step = 40000;           // 步数
+    private double learn_rate = 0.03;    // 学习率
+    private int step = 100000;           // 步数
 
     public static void main(String[] args)
     {
-        LogisticRegression lr = new LogisticRegression("sample.data");
+        LogisticRegression lr = new LogisticRegression("ex2data1.txt");
         lr.train();
         lr.predict();
     }
@@ -45,7 +45,8 @@ public class LogisticRegression
                 line = line.trim();
                 if (line != null)
                 {
-                    String[] item = line.split("\\s+");
+//                    String[] item = line.split("\\s+");
+                    String[] item = line.split(",");
                     double[] ditem = new double[item.length];
                     ditem[0] = 1.0;
                     for (int i = 1; i < item.length; i++)
