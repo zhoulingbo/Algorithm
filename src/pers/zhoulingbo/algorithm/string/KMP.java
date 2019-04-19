@@ -18,8 +18,7 @@ public class KMP
     public static void main(String[] args)
     {
         String s = "aabaabac";
-        String t = "aaaabaabaabacsdfdfdaabaabacsdf";
-        System.out.println(kmpSearchAll(s, t));
+        System.out.println(getPartialMatchKMP(s));
     }
 
     /**
@@ -115,6 +114,39 @@ public class KMP
                 if (a[begin + i] != a[i])
                     break;
                 pi[begin + i] = Math.max(pi[begin + i], i + 1);
+            }
+        }
+
+        return pi;
+    }
+    
+    /**
+     * 获取字符串部分匹配表(kmp)
+     * @param s
+     * @return
+     */
+    public static int[] getPartialMatchKMP(String s)
+    {
+        char[] a = s.toCharArray();
+        int[] pi = new int[a.length];
+        int begin = 1;
+        int matched = 0;
+        while (begin + matched < a.length)
+        {
+            if (a[begin+matched] == a[matched])
+            {
+                matched ++;
+                pi[begin+matched-1] = matched;
+            }
+            else
+            {
+                if (matched == 0)
+                    begin ++;
+                else
+                {
+                    begin += matched - pi[matched - 1];
+                    matched = pi[matched - 1];
+                }
             }
         }
 
